@@ -1,0 +1,22 @@
+pkgname=gearlever
+pkgver=4.6.2
+pkgrel=1
+pkgdesc='Manage AppImages with ease'
+url='https://github.com/mijorus/gearlever'
+arch=('x86_64' 'aarch64')
+options=('!strip' '!debug')
+license=('GPL-3.0-or-later')
+depends=('python' 'python-gobject' 'gtk4' 'libadwaita' 'python-dbus' 'python-pyxdg'
+         'python-requests' 'python-ftputil' 'python-desktop-entry-lib')
+makedepends=('meson' 'blueprint-compiler')
+source=("${pkgname}-${pkgver}.tar.gz::${url}/archive/refs/tags/${pkgver}.tar.gz")
+b2sums=('f6eb7f8f40df15bbcb3a110f4fa15d5fa2ce2bcdd2a9ee4f7bc4acc4a068a4c39e368f5514be61d10445f873932ea0ed7798b1f51f90af259ae0957c866ef340')
+
+build() {
+	arch-meson "${pkgname}-${pkgver}" build
+	meson compile -C build
+}
+
+package() {
+	meson install -C build --destdir "${pkgdir}"
+}

@@ -1,0 +1,23 @@
+pkgname=python-ftputil
+_pkgname=ftputil
+pkgver=5.2.0
+pkgrel=1
+pkgdesc='High-level FTP client library'
+url='https://ftputil.sschwarzer.net/'
+arch=('any')
+license=('BSD-3-Clause')
+depends=('python')
+makedepends=('python-build' 'python-installer' 'python-wheel' 'python-setuptools')
+source=("https://files.pythonhosted.org/packages/source/f/${_pkgname}/${_pkgname}-${pkgver}.tar.gz")
+b2sums=('ac31a77b3e28fdbb252250a8cb72f72e2aa36b024630c523c753f3b2462b16193955de73deca77df3792da75cba3b7418cde6d5ddb5fb1d985a31f00dfbfc3e3')
+
+build() {
+	cd "${_pkgname}-${pkgver}"
+	python -m build --wheel --no-isolation
+}
+
+package() {
+	cd "${_pkgname}-${pkgver}"
+	python -m installer --destdir="${pkgdir}" dist/*.whl
+	install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+}

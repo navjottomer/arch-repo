@@ -1,0 +1,43 @@
+name: build
+
+on:
+  push:
+    branches: [main]
+    paths: [pkgbuilds/**, build-order, scripts/**, .github/workflows/build.yml]
+  schedule:
+    - cron: '17 3 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    container: archlinux:base-devel
+    steps:
+      - name: Install git
+        run: pacman -Syu --noconfirm --needed git github-cli >/dev/null
+
+      - uses: actions/checkout@v4
+
+      - name: Build packages
+        env:
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+        run: |
+          git config --global --add safe.directory "$PWD"
+          ./scripts/build.sh
+
+      - name: Publish to the rolling release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config --global --add safe.directory "$PWD"
+          gh release view repo >/dev/null 2>&1 || gh release create repo --title "Package repo" --notes "Rolling release that holds the pacman repo files."
+          # Replace old files so the repo holds one version of each package.
+          gh release view repo --json assets --jq '.assets[].name' | xargs -r -n1 gh release delete-asset repo -y
+          gh release upload repo out/* --clobber
