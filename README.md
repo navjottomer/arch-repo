@@ -11,11 +11,21 @@ GitHub Actions and published as a pacman repository.
 
 ## Use it
 
+Trust the signing key once. Check that the fingerprint is
+`3F0823D74B8E361E6DAD19D50D48245D06C2C7AC`:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/navjottomer/arch-repo/main/navjottomer.gpg -o /tmp/navjottomer.gpg
+gpg --show-keys /tmp/navjottomer.gpg
+sudo pacman-key --add /tmp/navjottomer.gpg
+sudo pacman-key --lsign-key 3F0823D74B8E361E6DAD19D50D48245D06C2C7AC
+```
+
 Add this to `/etc/pacman.conf`, above `[core]`:
 
 ```ini
 [navjottomer]
-SigLevel = Optional TrustAll
+SigLevel = Required DatabaseOptional
 Server = https://github.com/navjottomer/arch-repo/releases/download/repo
 ```
 
@@ -32,7 +42,7 @@ sudo pacman -Syu gearlever
 - `.github/workflows/build.yml` builds them in an Arch container on every push
   to `pkgbuilds/` and every Monday, then uploads the result to the rolling
   release named `repo`.
-- If the secret `GPG_PRIVATE_KEY` is set, packages and the database are signed.
+- The secret `GPG_PRIVATE_KEY` signs every package and the database.
 
 ## Add a package
 
